@@ -1,4 +1,4 @@
-# SSH MCP Server
+# SSH MCP Server using HTTP or SSE Transport Protocols
 
 [![NPM Version](https://img.shields.io/npm/v/ssh-mcp)](https://www.npmjs.com/package/ssh-mcp)
 [![Downloads](https://img.shields.io/npm/dm/ssh-mcp)](https://www.npmjs.com/package/ssh-mcp)
@@ -100,7 +100,7 @@ set MCP_AUTH_TOKEN=token123  # require Bearer token on requests
 Batch launchers (Windows) included:
 * `StartHTTPMCP.bat` – HTTP Stream (default)
 * `StartSSEMCP.bat` – SSE
-* `StartDocker-SSH.bat` – spins up a local Ubuntu SSH test container on port 2222
+* `StartDocker-SSH.bat` – Sample .bat that spins up a local Ubuntu SSH test container on port 2222 using Docker (Used the Docker image from the Claude samples). 
 
 Run with `verbose` to enable extra logging, e.g.:
 ```bat
