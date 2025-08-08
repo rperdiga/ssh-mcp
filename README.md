@@ -133,72 +133,48 @@ Common optional:
 * `--transport=stream|sse`
 
 
-#### Claude Desktop Configuration (SSE example)
+### Claude Desktop (Custom Connectors)
+
+Claude Desktop now supports Custom Connectors for HTTP-based MCP servers. See the [Custom Connectors guide](https://support.anthropic.com/en/articles/11175166-getting-started-with-custom-connectors-using-remote-mcp) for setup instructions.
+
+1. Start your SSH MCP server locally:
+   ```bash
+   ssh-mcp --host=your-server.com --user=myuser --password=secret --transport=sse
+   ```
+
+2. In Claude Desktop, add a Custom Connector:
+   - **Name**: SSH MCP Server
+   - **URL**: `http://localhost:3001/sse` (SSE transport)
+   - **Type**: Server-Sent Events
+
+   Or for HTTP Stream transport:
+   - **URL**: `http://localhost:3001/mcp`
+   - **Type**: HTTP Stream
+
+### GitHub Copilot Configuration
+
+GitHub Copilot supports MCP through the `mcp.json` configuration file. Create or edit your `mcp.json` file:
+
+**Location:** `%APPDATA%\Code\User\mcp.json` (Windows) or `~/.config/Code/User/mcp.json` (Linux/Mac)
 
 ```jsonc
 {
-    "mcpServers": {
-        "ssh-mcp": {
-            "command": "npx",
-            "args": [
-                "ssh-mcp",
-                "-y",
-                "--",
-                "--transport=sse",
-                "--host=1.2.3.4",
-                "--sshPort=22",
-                "--user=root",
-                "--password=pass",
-                "--timeout=30000"
-            ]
-        }
+  "servers": {
+    "ssh-mcp": {
+      "url": "http://localhost:3001/sse",
+      "type": "http"
     }
+  },
+  "inputs": []
 }
 ```
 
-#### HTTP Stream Example
+Start your server and GitHub Copilot will automatically connect:
+```bash
+ssh-mcp --host=your-server.com --user=myuser --password=secret --transport=sse
+```
 
-```jsonc
-{
-    "mcpServers": {
-        "ssh-mcp": {
-            "command": "npx",
-            "args": [
-                "ssh-mcp",
-                "-y",
-                "--",
-                "--transport=stream",
-                "--host=1.2.3.4",
-                "--sshPort=22",
-                "--user=root",
-                "--key=path/to/key"
-            ]
-        }
-    }
-}
-```
-```
-### Claude Desktop (HTTP Stream recommended)
-
-```jsonc
-{
-    "mcpServers": {
-        "ssh-mcp": {
-            "command": "npx",
-            "args": [
-                "ssh-mcp",
-                "-y",
-                "--",
-                "--transport=stream",
-                "--host=1.2.3.4",
-                "--sshPort=22",
-                "--user=myuser",
-                "--timeout=30000"
-            ]
-        }
-    }
-}
-```
+**Note:** Use SSE transport (`/sse` endpoint) for maximum compatibility with both Claude and GitHub Copilot.
 
 ### Direct Node Invocation (from source build)
 ```bash
