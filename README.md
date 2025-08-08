@@ -24,6 +24,7 @@ Licensed under the MIT License. See [LICENSE](./LICENSE).
 - [Security Notes](#security-notes)
 - [Disclaimer](#disclaimer)
 - [Support](#support)
+- [Forking](#forking)
 
 ## Quick Start
 
@@ -259,3 +260,16 @@ See also:
 * [Changelog](./CHANGELOG.md)
 * [Contributing](./CONTRIBUTING.md)
 * [Code of Conduct](./CODE_OF_CONDUCT.md)
+* [Forking Guide](./FORKING.md)
+
+## Forking
+
+If you maintain a fork, please:
+1. Add lineage details in `CHANGELOG.md` under `[Unreleased] > Fork Lineage`.
+2. Keep `FORKING.md` updated with your policies.
+3. Use distinct version tags (e.g. `v1.1.0-fork.1`).
+4. Change the npm package name if you republish.
+
+See [FORKING.md](./FORKING.md) for full instructions.
+\n+### Releases & Publishing
+\n+Automated npm publishing is configured via `.github/workflows/release.yml` and triggers on tags named `v*` (e.g. `v1.1.1`).\n+\n+Workflow summary:\n+1. Update `CHANGELOG.md` under `[Unreleased]` and move entries to a new version heading.\n+2. Commit changes.\n+3. Bump version & create tag (pick one):\n+   ```bash\n+   npm run release:patch   # or release:minor / release:major\n+   ```\n+   These scripts: update version, commit, tag.\n+4. Push commits & tags:\n+   ```bash\n+   git push && git push --tags\n+   ```\n+5. GitHub Action builds and publishes (requires `NPM_TOKEN` secret).\n+\n+Manual alternative:\n+```bash\n+npm version patch -m "chore: release %s"\n+git push && git push --tags\n+```\n+\n+Repository secret required:\n+* `NPM_TOKEN` – npm auth token with publish rights. Add via GitHub Settings → Secrets → Actions.\n+\n+If forking & publishing under a different name, change the `name` field in `package.json` before the first publish.\n*** End Patch

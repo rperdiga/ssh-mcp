@@ -10,8 +10,14 @@
   "scripts": {
     "prepare": "npm run build",
     "build": "tsc && shx chmod +x build/*.js",
-  "inspect": "npx @modelcontextprotocol/inspector http://127.0.0.1:3001/mcp",
-  "start": "node build/index.js"
+    "inspect": "npx @modelcontextprotocol/inspector http://127.0.0.1:3001/mcp",
+    "start": "node build/index.js",
+    "release:patch": "npm version patch -m 'chore: release %s' && npm publish",
+    "release:minor": "npm version minor -m 'chore: release %s' && npm publish",
+    "release:major": "npm version major -m 'chore: release %s' && npm publish"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "build"

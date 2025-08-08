@@ -1,8 +1,18 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project/fork are documented here.
 
 The format is loosely based on Keep a Changelog.
+
+## [Unreleased]
+### Planned / Pending
+- (Add new changes here after forking or before next tag)
+
+### Fork Lineage
+- If this is a fork, record upstream project URL and base commit here.
+	- Upstream: <REPLACE_WITH_UPSTREAM_URL>
+	- Forked from commit: <REPLACE_WITH_COMMIT_SHA>
+	- License of upstream: <REPLACE_WITH_LICENSE>
 
 ## [1.1.0] - 2025-08-08
 ### Added
