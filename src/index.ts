@@ -57,7 +57,17 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*').split(',').map(o =>
 const REQUIRE_AUTH_TOKEN = process.env.MCP_AUTH_TOKEN || '';
 const MAX_SESSION_AGE_MS = process.env.MCP_MAX_SESSION_AGE_MS ? parseInt(process.env.MCP_MAX_SESSION_AGE_MS) : (30 * 60 * 1000); // 30m default
 const KEEPALIVE_INTERVAL_MS = process.env.MCP_KEEPALIVE_INTERVAL_MS ? parseInt(process.env.MCP_KEEPALIVE_INTERVAL_MS) : 30_000; // 30s
-const ENABLE_DNS_REBIND_PROTECTION = process.env.DISABLE_DNS_REBIND === '1' ? false : true;
+// Security: relaxed by default for local development. Enable protection via:
+//   * CLI flag: --strictSecurity=true (or 1)
+//   * Env var: ENABLE_DNS_REBIND=1
+//   * NODE_ENV=production
+// Previous env DISABLE_DNS_REBIND is deprecated (still honored if set to '1').
+const STRICT_SECURITY_FLAG = (argvConfig as any)?.strictSecurity === '1' || (argvConfig as any)?.strictSecurity === 'true';
+const ENABLE_DNS_REBIND_PROTECTION = (
+  STRICT_SECURITY_FLAG ||
+  process.env.ENABLE_DNS_REBIND === '1' ||
+  process.env.NODE_ENV === 'production'
+) && process.env.DISABLE_DNS_REBIND !== '1';
 const SUPPORTED_PROTOCOL_VERSION = '2024-11-05';
 const SSH_DEBUG = process.env.MCP_SSH_DEBUG === '1';
 
@@ -560,14 +570,25 @@ async function startStreamableHttpServer() {
         transport = transports[sessionIdHeader];
       } else {
         // New session -> create transport & server upon initialize request
-        transport = new StreamableHTTPServerTransport({
+        // Build an expanded allowed host list including host:port variants to avoid false negatives.
+        const baseHosts = [LISTEN_HOST, '127.0.0.1', 'localhost'];
+        const hostSet = new Set<string>();
+        for (const h of baseHosts) {
+          if (!h) continue;
+            hostSet.add(h);
+            hostSet.add(`${h}:${LISTEN_PORT}`);
+        }
+        const expandedAllowedHosts = Array.from(hostSet);
+  transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => randomUUID(),
             onsessioninitialized: (sessionId: string) => {
             transports[sessionId] = transport!;
           },
           enableDnsRebindingProtection: ENABLE_DNS_REBIND_PROTECTION,
-          allowedHosts: [LISTEN_HOST, '127.0.0.1', 'localhost'],
+          allowedHosts: expandedAllowedHosts,
         });
+        log('debug', 'Stream transport allowedHosts', { allowedHosts: expandedAllowedHosts });
+  log('info', 'Security mode', { dnsRebindingProtection: ENABLE_DNS_REBIND_PROTECTION, strictFlag: STRICT_SECURITY_FLAG });
         const server = createMcpServer();
         await server.connect(transport);
         servers[(transport as any).sessionId] = server;
