@@ -6,36 +6,41 @@
 [![License](https://img.shields.io/github/license/tufantunc/ssh-mcp)](./LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/tufantunc/ssh-mcp?style=social)](https://github.com/tufantunc/ssh-mcp/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/tufantunc/ssh-mcp?style=social)](https://github.com/tufantunc/ssh-mcp/forks)
-[![Build Status](https://github.com/tufantunc/ssh-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/tufantunc/ssh-mcp/actions)
+[![Build Status](https://github.com/tufantunc/ssh-mcp/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/tufantunc/ssh-mcp/actions)
 [![GitHub issues](https://img.shields.io/github/issues/tufantunc/ssh-mcp)](https://github.com/tufantunc/ssh-mcp/issues)
 
-**SSH MCP Server** is a local Model Context Protocol (MCP) server that exposes SSH control for Linux and Windows systems, enabling LLMs and other MCP clients to execute shell commands securely via SSH.
+**SSH MCP Server** is a lightweight Model Context Protocol (MCP) server that exposes SSH command execution for Linux and Windows targets. It lets MCP‑compatible clients (Claude Desktop, Cursor, MCP Inspector, etc.) run shell commands over SSH in a controlled, timeout‑aware way.
+
+Licensed under the MIT License. See [LICENSE](./LICENSE).
 
 ## Contents
 
 - [Quick Start](#quick-start)
 - [Features](#features)
 - [Installation](#installation)
+- [Usage](#usage)
 - [Client Setup](#client-setup)
 - [Testing](#testing)
+- [Security Notes](#security-notes)
 - [Disclaimer](#disclaimer)
 - [Support](#support)
 
 ## Quick Start
 
-- [Install](#installation) SSH MCP Server
-- [Configure](#configuration) SSH MCP Server
-- [Set up](#client-setup) your MCP Client (e.g. Claude Desktop, Cursor, etc)
-- Execute remote shell commands on your Linux or Windows server via natural language
+1. Install (or clone & build) this package
+2. Run the server (pick a transport: `stream` or `sse`)
+3. Point your MCP client at it
+4. Use the `exec` tool to run commands on the target host
 
 ## Features
 
-- MCP-compliant server exposing SSH capabilities
-- Execute shell commands on remote Linux and Windows systems
-- Secure authentication via password or SSH key
-- Built with TypeScript and the official MCP SDK
-- **Configurable timeout protection** with automatic process abortion
-- **Graceful timeout handling** - attempts to kill hanging processes before closing connections
+- MCP-compliant server exposing SSH command execution
+- Linux + Windows remote hosts supported (shell semantics may differ)
+- Password or private key authentication
+- TypeScript, minimal deps, official MCP SDK
+- SSE (legacy) and HTTP Stream (modern, default) transports
+- Execution timeout with best‑effort termination of the remote process
+- Optional local fallback exec (set `MCP_LOCAL_EXEC=1`) for debugging
 
 ### Tools
 
@@ -49,32 +54,87 @@
 
 ## Installation
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/tufantunc/ssh-mcp.git
-   cd ssh-mcp
-   ```
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+### From NPM (recommended)
+```bash
+npm install -g ssh-mcp
+```
+Then run with:
+```bash
+ssh-mcp --host=1.2.3.4 --user=myuser --password=secret --transport=stream
+```
+
+### From Source
+```bash
+git clone https://github.com/tufantunc/ssh-mcp.git
+cd ssh-mcp
+npm install
+npm run build
+node build/index.js --host=1.2.3.4 --user=myuser --transport=stream
+```
+
+## Usage
+
+Minimal example (HTTP Stream transport):
+```bash
+ssh-mcp --host=1.2.3.4 --user=myuser --password=secret --transport=stream --timeout=30000
+```
+
+SSE (legacy) transport:
+```bash
+ssh-mcp --host=1.2.3.4 --user=myuser --password=secret --transport=sse
+```
+
+Using an SSH key:
+```bash
+ssh-mcp --host=host.example --user=deploy --key=C:\\keys\\id_ed25519
+```
+
+Environment (optional):
+```bash
+set LOG_LEVEL=debug          # increase logging
+set MCP_LOCAL_EXEC=1         # run commands locally (no SSH) for quick test
+set MCP_AUTH_TOKEN=token123  # require Bearer token on requests
+```
+
+Batch launchers (Windows) included:
+* `StartHTTPMCP.bat` – HTTP Stream (default)
+* `StartSSEMCP.bat` – SSE
+* `StartDocker-SSH.bat` – spins up a local Ubuntu SSH test container on port 2222
+
+Run with `verbose` to enable extra logging, e.g.:
+```bat
+StartHTTPMCP.bat verbose
+```
 
 ## Client Setup
 
 You can configure Claude Desktop to use this MCP Server.
 
-**Required Parameters:**
-- `host`: Hostname or IP of the Linux or Windows server
-- `user`: SSH username
+### Transports
 
-**Optional Parameters:**
-- `port`: SSH port (default: 22)
-- `password`: SSH password (or use `key` for key-based auth)
-- `key`: Path to private SSH key
-- `timeout`: Command execution timeout in milliseconds (default: 60000ms = 1 minute)
+| Transport | Flag | Endpoint(s) | Notes |
+|----------|------|-------------|-------|
+| HTTP Stream (default) | `--transport=stream` | `/mcp` | Single endpoint; SSE replacement |
+| SSE (legacy) | `--transport=sse` | `/sse` + `/messages` | Retained for broad client compatibility |
+
+### Parameters
+Required:
+* `--host` target host/IP
+* `--user` SSH username
+
+Common optional:
+* `--sshPort=<n>` (default 22)
+* `--listenPort=<n>` (HTTP listen port, default 3001)
+* `--listenHost=<host>` bind address (default 127.0.0.1)
+* `--password=<pwd>` password auth
+* `--key=<path>` private key (overrides password if both given)
+* `--timeout=<ms>` command timeout (default 60000)
+* `--transport=stream|sse`
 
 
-```commandline
+#### Claude Desktop Configuration (SSE example)
+
+```jsonc
 {
     "mcpServers": {
         "ssh-mcp": {
@@ -83,11 +143,11 @@ You can configure Claude Desktop to use this MCP Server.
                 "ssh-mcp",
                 "-y",
                 "--",
+                "--transport=sse",
                 "--host=1.2.3.4",
-                "--port=22",
+                "--sshPort=22",
                 "--user=root",
                 "--password=pass",
-                "--key=path/to/key",
                 "--timeout=30000"
             ]
         }
@@ -95,13 +155,89 @@ You can configure Claude Desktop to use this MCP Server.
 }
 ```
 
+#### HTTP Stream Example
+
+```jsonc
+{
+    "mcpServers": {
+        "ssh-mcp": {
+            "command": "npx",
+            "args": [
+                "ssh-mcp",
+                "-y",
+                "--",
+                "--transport=stream",
+                "--host=1.2.3.4",
+                "--sshPort=22",
+                "--user=root",
+                "--key=path/to/key"
+            ]
+        }
+    }
+}
+```
+```
+### Claude Desktop (HTTP Stream recommended)
+
+```jsonc
+{
+    "mcpServers": {
+        "ssh-mcp": {
+            "command": "npx",
+            "args": [
+                "ssh-mcp",
+                "-y",
+                "--",
+                "--transport=stream",
+                "--host=1.2.3.4",
+                "--sshPort=22",
+                "--user=myuser",
+                "--timeout=30000"
+            ]
+        }
+    }
+}
+```
+
+### Direct Node Invocation (from source build)
+```bash
+node build/index.js --transport=stream --listenPort=3001 --host=1.2.3.4 --sshPort=22 --user=root --password=pass --timeout=30000
+```
+
 ## Testing
 
-You can use the [MCP Inspector](https://modelcontextprotocol.io/docs/tools/inspector) for visual debugging of this MCP Server.
-
-```sh
-npm run inspect
+Inspector:
+```bash
+npm run build
+npx @modelcontextprotocol/inspector http://127.0.0.1:3001/mcp
 ```
+
+Local SSH test container (Windows, Docker required):
+```bat
+StartDocker-SSH.bat
+StartHTTPMCP.bat -- then connect with --host=127.0.0.1 --sshPort=2222 --user=computeruse --password=computeruse
+```
+
+Switch to SSE for clients that require it:
+```bash
+ssh-mcp --transport=sse --host=127.0.0.1 --user=me --password=secret
+```
+
+Local command mode (no SSH network hop):
+```bash
+set MCP_LOCAL_EXEC=1
+ssh-mcp --host=localhost --user=ignored --transport=stream
+```
+
+## Security Notes
+
+Production considerations:
+* Prefer key auth over passwords
+* Run behind a firewall / localhost + SSH tunnel
+* Set `MCP_AUTH_TOKEN` to require a bearer token
+* Restrict origins with `ALLOWED_ORIGINS` env
+* Use network segmentation for sensitive hosts
+* Review (and possibly wrap) the `exec` tool if you need command allow‑listing
 
 ## Disclaimer
 
@@ -117,4 +253,9 @@ This project follows a [Code of Conduct](./CODE_OF_CONDUCT.md) to ensure a welco
 
 ## Support
 
-If you find SSH MCP Server helpful, consider starring the repository or contributing! Pull requests and feedback are welcome. 
+If this project helps you, a star ⭐ or feedback issue is appreciated. Pull requests welcome.
+
+See also:
+* [Changelog](./CHANGELOG.md)
+* [Contributing](./CONTRIBUTING.md)
+* [Code of Conduct](./CODE_OF_CONDUCT.md)

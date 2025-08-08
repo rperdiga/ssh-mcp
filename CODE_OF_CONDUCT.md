@@ -1,13 +1,22 @@
 # Code of Conduct
 
-Welcome! To keep our community positive and productive, please follow these simple rules:
+This project follows a simple, common-sense code of conduct:
 
-- Be respectful and considerate to everyone.
-- No harassment, discrimination, or personal attacks.
-- Give constructive feedback and accept it gracefully.
-- Keep discussions focused on the project.
-- Respect privacy—don't share others' private info.
+## Be Respectful
+Treat everyone with respect. Personal attacks, harassment, or discrimination are not tolerated.
 
-If you see behavior that goes against these rules, please report it to the maintainers.
+## Be Constructive
+Provide actionable, kind feedback. Assume good intent. Focus on improving the project.
 
-Let's build something great together! 
+## Stay On Topic
+Keep discussions relevant to the project. Use issues & PRs for technical collaboration.
+
+## No Spam or Abuse
+Zero tolerance for spam, vandalism, or malicious activity.
+
+## Reporting
+If you experience or witness unacceptable behavior, please open a private issue (if available) or email the maintainer.
+
+The maintainer may take any action deemed appropriate (warning, PR closure, ban) to enforce these guidelines.
+
+Participation implies agreement with this Code of Conduct.

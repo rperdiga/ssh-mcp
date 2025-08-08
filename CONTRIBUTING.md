@@ -1,36 +1,38 @@
-# Contributing to ssh-mcp
+# Contributing
 
-Thank you for your interest in contributing to ssh-mcp! Your help is greatly appreciated. Please follow these guidelines to make the process smooth for everyone.
+Thanks for your interest in contributing!
 
-## How to Contribute
+## Ways to Help
+- Report bugs (include reproduction steps)
+- Improve documentation / examples
+- Add small, focused features (open an issue first for larger changes)
+- Refactor for clarity without changing behavior
 
-1. **Fork the repository** and create your branch from `main`.
-2. **Clone your fork** to your local machine.
-3. **Create a descriptive branch name** (e.g., `feature/add-ssh-support` or `bugfix/fix-connection-issue`).
-4. **Make your changes** with clear, concise commits.
-5. **Test your changes** to ensure nothing is broken.
-6. **Push to your fork** and submit a Pull Request (PR) to the `main` branch.
+## Development Setup
+```bash
+npm install
+npm run build
+```
+Run locally (HTTP stream):
+```bash
+node build/index.js --host=127.0.0.1 --user=me --transport=stream --password=test
+```
 
-## Code Style
-- Follow the existing code style and conventions.
-- Write clear, descriptive commit messages.
-- Add comments where necessary for clarity.
-
-## Issues and Bugs
-- If you find a bug, please open an issue with detailed steps to reproduce it.
-- If you want to work on an existing issue, comment on it to let others know.
-
-## Feature Requests
-- Open an issue to discuss new features before submitting a PR.
-- Describe your proposed feature and its use case.
+## Coding Guidelines
+- Keep dependencies minimal
+- Favor explicit error messages (wrap with McpError where appropriate)
+- Avoid introducing breaking changes without discussion
+- Stick to existing formatting (TS compiler output + minimal stylistic churn)
 
 ## Pull Requests
-- Ensure your PR is up to date with the latest `main` branch.
-- Reference related issues in your PR description (e.g., `Closes #12`).
-- Be responsive to feedback and requested changes.
+1. Fork the repo & create a topic branch
+2. Make changes with clear commits
+3. Update README / CHANGELOG if needed
+4. Ensure `npm run build` succeeds
+5. Open PR, reference related issues, describe rationale
 
-## Code of Conduct
-- Be respectful and inclusive in all interactions.
-- See the [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) if available.
+## Security
+Do not open a public issue for security-sensitive findings. Instead, please email the maintainer or open a private advisory if GitHub supports it for this repository.
 
-Thank you for helping make ssh-mcp better! 
+## License
+By contributing, you agree your contributions are licensed under the MIT License of this repository.
