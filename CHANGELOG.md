@@ -9,12 +9,10 @@ The format is loosely based on Keep a Changelog.
 - (Add new changes here after forking or before next tag)
 
 ### Fork Lineage
-- If this is a fork, record upstream project URL and base commit here.
-	- Upstream: <REPLACE_WITH_UPSTREAM_URL>
-	- Forked from commit: <REPLACE_WITH_COMMIT_SHA>
-	- License of upstream: <REPLACE_WITH_LICENSE>
-
-## [1.1.0] - 2025-08-08
+- This is a fork of the original ssh-mcp project.
+  - Upstream: https://github.com/tufantunc/ssh-mcp
+  - Forked from commit: 1682152
+  - License of upstream: MIT## [1.1.0] - 2025-08-08
 ### Added
 - HTTP Stream transport (default) alongside legacy SSE transport.
 - Execution timeout with best‑effort remote process termination.
