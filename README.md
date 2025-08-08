@@ -194,6 +194,8 @@ Local SSH test container (Windows, Docker required):
 StartDocker-SSH.bat
 StartHTTPMCP.bat -- then connect with --host=127.0.0.1 --sshPort=2222 --user=computeruse --password=computeruse
 ```
+**Docker Setup:** This project has been tested with the Ubuntu Docker image from Anthropic's [computer-use-demo](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo) reference implementation, which provides a fully configured environment Ubuntu Linux environment.  You can achieve same functionality with Computer Use, but it very slow and costly.
+
 
 Switch to SSE for clients that require it:
 ```bash
